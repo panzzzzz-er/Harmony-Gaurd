@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <title>Audio Detection</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Abril+Fatface&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+  <link rel="stylesheet" href="static/css/animate.css" />
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+
+<body>
+  <div id="colorlib-page">
+    <a href="#" class="js-colorlib-nav-toggle colorlib-nav-toggle"><i></i></a>
+    <aside id="colorlib-aside" role="complementary" class="js-fullheight">
+      <h1 id="colorlib-logo" class="mb-4 mb-md-5">
+        <a href="index.html" style="background-image: url(static/images/bg_1.jpg)">Harmony Guard</a>
+      </h1>
+      <nav id="colorlib-main-menu" role="navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <!-- END COLORLIB-ASIDE -->
+    <div id="colorlib-main">
+      <section class="ftco-section ftco-no-pt ftco-no-pb">
+        <div class="container px-md-0">
+          <div class="row d-flex no-gutters">
+            <div class="col-lg-8 col-md-7 order-md-last d-flex align-items-stretch">
+              <div class="contact-wrap w-100 p-md-5 p-4">
+                <h3 class="mb-4 heading">Audio Detection</h3>
+                <button id="recordButton" class="btn btn-primary" style="margin: 10px; width: 150px;">Record
+                  Audio</button><br>
+                <button id="analyzeButton" class="btn btn-primary" style="margin: 10px; width: 150px;">Analyze
+                  Audio</button>
+
+                <p id="recordingTime"></p>
+                <p id="analysisResult"></p>
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-5 d-flex align-items-stretch">
+              <div class="info-wrap js-fullheight bg-primary w-100 p-md-5 p-4">
+                <h3>Let's get Started</h3>
+                <p class="mb-4">Start Detection by clicking on the buttons</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- END COLORLIB-MAIN -->
+  </div>
+  <!-- END COLORLIB-PAGE -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var recordingTimer;
+
+      document.getElementById('recordButton').addEventListener('click', function () {
+        document.getElementById('recordingTime').innerText = 'Recording:';
+
+        // Start recording timer
+        var seconds = 0;
+        recordingTimer = setInterval(function () {
+          seconds++;
+          document.getElementById('recordingTime').innerText = 'Recording: ' + seconds + ' seconds';
+        }, 1000);
+
+        // Send request to record audio
+        fetch('/record', {
+          method: 'POST'
+        })
+          .then(response => response.json())
+          .then(data => {
+            clearInterval(recordingTimer);
+            alert(data.message);
+            document.getElementById('recordingTime').innerText = 'Recording stopped';
+          })
+          .catch(error => {
+            clearInterval(recordingTimer);
+            alert('Error: ' + error);
+            document.getElementById('recordingTime').innerText = 'Recording stopped due to an error';
+          });
+      });
+
+      document.getElementById('analyzeButton').addEventListener('click', function () {
+        document.getElementById('analysisResult').innerText = '';
+
+        // Send request to analyze audio
+        fetch('/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            audio_file_path: 'static/audio/uploaded_audio.mp3' // Path to the uploaded audio file
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            clearInterval(recordingTimer);
+            alert(data.result);
+            document.getElementById('recordingTime').innerText = 'Analysis completed';
+            document.getElementById('analysisResult').innerText = data.result;
+          })
+          .catch(error => {
+            clearInterval(recordingTimer);
+            alert('Error: ' + error);
+            document.getElementById('recordingTime').innerText = 'Analysis stopped due to an error';
+            document.getElementById('analysisResult').innerText = 'Analysis failed';
+          });
+      });
+    });
+  </script>
+
+  <!-- loader -->
+  <div id="ftco-loader" class="show fullscreen">
+    <svg class="circular" width="48px" height="48px">
+      <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
+      <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+        stroke="#F96D00" />
+    </svg>
+  </div>
+
+  <script src="static/js/jquery.min.js"></script>
+  <script src="static/js/main.js"></script>
+</body>
+
+</html>
